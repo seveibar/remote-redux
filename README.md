@@ -35,7 +35,7 @@ const store = createStore(
 )
 
 store.dispatch({ type: 'LOAD_COUNTER', remote: true })
-// the server will return a new state: { counter: 5 }
+// the server will eventually return a new state: { counter: 5 }
 
 store.dispatch({ type: 'INCREASE_COUNTER' })
 // state: { counter: 1 } (before the counter is loaded)

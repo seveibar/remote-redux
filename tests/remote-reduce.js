@@ -39,11 +39,7 @@ test('remote reduce revert prior', t => {
   }, 200)
 })
 
-// In this test case, remote redux might be considered unreasonably safe, after
-// all, the action to increase the counter could still be applied after the
-// remote load. TODO Later, you'll be able to enable "reapply" as a
-// parameter- but this should come up infrequently so it's probably nbd
-test('remote reduce revert future', t => {
+test('remote reduce reapply future', t => {
   const store = createStore(
     reducer,
     { counter: 0 },
@@ -58,9 +54,9 @@ test('remote reduce revert future', t => {
 
   store.dispatch({ type: 'INCREASE_COUNTER' })
 
-  t.deepEqual(store.getState(), { counter: 1 })
+  t.deepEqual({ counter: 1 }, store.getState())
 
   setTimeout(() => {
-    t.deepEqual(store.getState(), { counter: 5 })
+    t.deepEqual({ counter: 6 }, store.getState())
   }, 200)
 })

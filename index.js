@@ -27,12 +27,14 @@ const remoteRedux = ({
 const remoteReduxMiddleware = (
   makeRequest,
   detectRemoteAction,
-  reducer
+  reducer,
+  options
 ) => store => {
   if (!detectRemoteAction) {
     detectRemoteAction = action =>
       action.remote || action.type.startsWith('REMOTE_')
   }
+  if (!options) options = { conservative: false }
 
   // currently we must only execute one remote action at once because of
   // the possibility of mutating server-side actions
@@ -82,9 +84,10 @@ const remoteReduxMiddleware = (
       }
     }
 
+    let newActions = []
     if (action._remoteReduxResponse) {
       // Reconciliation
-      const fastStoreState = next(action)
+      const fastStoreState = applyActions(store.getState(), [action])
       const trueStoreState = applyActions(
         lastTrueState,
         // put the actions in correct order
@@ -96,21 +99,34 @@ const remoteReduxMiddleware = (
       if (_isEqual(fastStoreState, trueStoreState)) {
         reconciledState = fastStoreState
       } else {
-        // Undo all the user actions since the remote reduction
+        // The order in which the actions are applied effects the state!
         // NOTE: This should happen infrequently
-        queuedRemoteActions = []
-        reconciledState = applyActions(trueStoreState, [action])
+        if (options.conservative) {
+          // Undo all the user actions since the remote reduction
+          queuedRemoteActions = []
+          reconciledState = applyActions(trueStoreState, [action])
+        } else {
+          reconciledState = trueStoreState
+        }
+        newActions.push({
+          type: '@@remote-redux/RECONCILE',
+          newState: reconciledState
+        })
       }
+      lastTrueState = reconciledState
+      actionsSinceTrueState = []
 
       // We've finished this remote reduction, start another if any are waiting
       remoteActionInProgress = false
       if (queuedRemoteActions.length > 0) {
-        store.dispatch(queuedRemoteActions[0])
+        newActions.push(queuedRemoteActions[0])
       }
-
-      return reconciledState
     }
-    return next(action)
+    let result = next(action)
+    newActions.forEach(action => {
+      store.dispatch(action)
+    })
+    return result
   }
 }
 
@@ -121,6 +137,9 @@ const remoteReduxReducer = applyResponse => {
   return (state, action) => {
     if (action._remoteReduxResponse) {
       return applyResponse(state, action)
+    }
+    if (action.type === '@@remote-redux/RECONCILE') {
+      return action.newState
     }
     return state
   }
