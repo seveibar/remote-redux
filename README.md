@@ -5,6 +5,8 @@ by combining the redux state machine on the client with the server.
 
 ![image](https://user-images.githubusercontent.com/1910070/33395325-1b0d0038-d513-11e7-9f45-57df62f39834.png)
 
+You can see the motivation behind redux-remote in [this blog post](https://medium.com/@seveibar/remote-reducers-and-predictive-reduction-572ab5054211).
+
 Example Usage:
 ```javascript
 import { createStore, applyMiddleware } from 'redux'
