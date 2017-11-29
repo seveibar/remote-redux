@@ -77,10 +77,15 @@ function detectRemoteAction(action) {
   return action.remote
 }
 
+const reducer = remoteReduxWrapReducer(localReducer)
+
 const store = createStore(
-  localReducer,
+  reducer,
   { counter: 0 },
-  applyMiddleware(remoteReduxMiddleware(makeRequest, detectRemoteAction))
+  applyMiddleware(
+    // ...your middlewares
+    remoteReduxMiddleware(makeRequest, detectRemoteAction, reducer)
+  )
 )
 
 store.dispatch({ type: 'INCREASE_COUNTER' })
@@ -89,7 +94,7 @@ store.dispatch({ type: 'INCREASE_COUNTER' })
 // state: { counter: 3 }
 
 store.dispatch({ type: 'DOUBLE_COUNTER', remote: true })
-// the server will return a new state: { counter: 6 }
+// the server will eventually return a new state: { counter: 6 }
 
 store.dispatch({ type: 'INCREASE_COUNTER_IF_BELOW_5' })
 // initially increases the counter (to 4), then reverts the action when it is
