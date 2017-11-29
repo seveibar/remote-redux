@@ -21,10 +21,6 @@ function makeRequest(state, action, callback) {
   fetch('/api/apply-action', { payload: { state, action }}).then(callback)
 }
 
-function detectRemoteAction(action) {
-  return action.remote
-}
-
 const reducer = remoteReduxWrapReducer(localReducer)
 
 const store = createStore(
@@ -32,7 +28,7 @@ const store = createStore(
   { counter: 0 },
   applyMiddleware(
     // ...your middlewares
-    remoteReduxMiddleware(makeRequest, detectRemoteAction, reducer)
+    remoteReduxMiddleware(makeRequest, null, reducer)
   )
 )
 
