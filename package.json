@@ -4,6 +4,9 @@
   "main": "index.js",
   "author": "Severin Ibarluzea",
   "license": "MIT",
+  "scripts": {
+    "test": "tape ./tests/*.js"
+  },
   "dependencies": {
     "lodash": "^4.17.4"
   },
