@@ -1,5 +1,4 @@
 // @flow weak
-// Look Ma! No babel!
 
 // We have a Fast Store and a True Store. The True Store is kept in the
 // middleware, the Fast Store is the user-defined store that the middleware
