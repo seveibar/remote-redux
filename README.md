@@ -95,8 +95,8 @@ store.dispatch({ type: 'INCREASE_COUNTER' })
 
 ## Predictive Reduction
 
-Redux requires that actions be applied in order. This would mean that we have to
-until remote actions complete to apply local actions. This can have a negative
+Redux requires that actions be applied in order. This would mean that we would have to
+wait until remote actions complete to apply local actions. This can have a negative
 impact on the user experience e.g. they can't hit back while a page is loading.
 
 To eliminate the delay of user actions, we can use _predictive reduction_.
