@@ -2,7 +2,7 @@
 
 var test = require('tape')
 const { createStore, applyMiddleware } = require('redux')
-const { remoteReduxMiddleware, remoteReduxWrapReducer } = require('../')
+const { remoteReduxMiddleware, remoteReduxWrapReducer } = require('../src')
 const { localReducer, remoteReducer } = require('./common')
 
 function makeRequest(state, action, callback) {

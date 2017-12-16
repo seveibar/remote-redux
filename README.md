@@ -10,6 +10,48 @@ You can see the motivation behind redux-remote in [this blog post](https://mediu
 Example Usage:
 
 ```javascript
+import { createStore } from 'remote-redux'
+
+function reducer(state, action) {
+  if (action.type === 'INCREASE_COUNTER') {
+    return { counter: state.counter + 1 }
+  }
+  return state
+}
+
+function makeRequest(state, action, callback) {
+  fetch('/api/apply-action', {
+    method: 'POST',
+    body: JSON.stringify({ state, action }),
+    headers: new Headers({ 'Content-Type': 'application/json' })
+  })
+    .then(response => response.json())
+    .then(response => {
+      callback(response.newState)
+    })
+}
+
+const store = createStore({
+  reducer,
+  initialState: { counter: 0 },
+  middlewares: [],
+  makeRequest
+})
+
+store.dispatch({ type: 'LOAD_COUNTER', remote: true })
+// the server will eventually return a new state: { counter: 5 }
+
+store.dispatch({ type: 'INCREASE_COUNTER' })
+// state: { counter: 1 } (before the counter is loaded)
+// state: { counter: 6 } (after the counter is loaded)
+```
+
+## Using native redux `createStore`
+
+Sometimes you may want to use npm redux module explicitly, this can be done by
+calling `remoteReduxMiddleware` and `remoteReduxWrapReducer`.
+
+```javascript
 import { createStore, applyMiddleware } from 'redux'
 import { remoteReduxMiddleware, remoteReduxWrapReducer } from 'remote-redux'
 

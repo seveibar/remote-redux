@@ -5,6 +5,7 @@
 // intercepts.
 
 const _isEqual = require('lodash/isEqual')
+const redux = require('redux')
 
 // Helper function/main export to make setting up remote redux easier
 const remoteRedux = ({
@@ -148,10 +149,29 @@ const wrapReducer = (userReducer, applyResponse) => (state, action) => {
   return userReducer(remoteReduxReducer(applyResponse)(state, action), action)
 }
 
+const createStore = ({
+  reducer,
+  initialState,
+  middlewares,
+  makeRequest,
+  detectRemoteAction,
+  applyResponse
+}) => {
+  const wrappedReducer = wrapReducer(reducer, applyResponse)
+
+  const middleware = redux.applyMiddleware(
+    ...(middlewares || []),
+    remoteReduxMiddleware(makeRequest, detectRemoteAction, wrappedReducer)
+  )
+
+  return redux.createStore(wrappedReducer, initialState, middleware)
+}
+
 module.exports = {
   default: remoteRedux,
   remoteRedux,
   remoteReduxMiddleware,
   remoteReduxReducer,
-  remoteReduxWrapReducer: wrapReducer
+  remoteReduxWrapReducer: wrapReducer,
+  createStore
 }
