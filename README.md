@@ -8,6 +8,7 @@ by combining the redux state machine on the client with the server.
 You can see the motivation behind redux-remote in [this blog post](https://medium.com/@seveibar/remote-reducers-and-predictive-reduction-572ab5054211).
 
 Example Usage:
+
 ```javascript
 import { createStore, applyMiddleware } from 'redux'
 import { remoteReduxMiddleware, remoteReduxWrapReducer } from 'remote-redux'
@@ -20,7 +21,15 @@ function localReducer(state, action) {
 }
 
 function makeRequest(state, action, callback) {
-  fetch('/api/apply-action', { payload: { state, action }}).then(callback)
+  fetch('/api/apply-action', {
+    method: 'POST',
+    body: JSON.stringify({ state, action }),
+    headers: new Headers({ 'Content-Type': 'application/json' })
+  })
+    .then(response => response.json())
+    .then(response => {
+      callback(response.newState)
+    })
 }
 
 const reducer = remoteReduxWrapReducer(localReducer)
@@ -48,9 +57,9 @@ Redux requires that actions be applied in order. This would mean that we have to
 until remote actions complete to apply local actions. This can have a negative
 impact on the user experience e.g. they can't hit back while a page is loading.
 
-To eliminate the delay of user actions, we can use *predictive reduction*.
+To eliminate the delay of user actions, we can use _predictive reduction_.
 With predictive reduction, you apply local actions immediately, then revert them
-as remote actions finish *only if they had caused an invalid state*. For more
+as remote actions finish _only if they had caused an invalid state_. For more
 information, check out [this blog post](https://medium.com/@seveibar/remote-reducers-and-predictive-reduction-572ab5054211).
 
 ```javascript
@@ -70,7 +79,15 @@ function localReducer(state, action) {
 }
 
 function makeRequest(state, action, callback) {
-  fetch('/api/apply-action', { payload: { state, action }}).then(callback)
+  fetch('/api/apply-action', {
+    method: 'POST',
+    body: JSON.stringify({ state, action }),
+    headers: new Headers({ 'Content-Type': 'application/json' })
+  })
+    .then(response => response.json())
+    .then(response => {
+      callback(response.newState)
+    })
 }
 
 function detectRemoteAction(action) {
