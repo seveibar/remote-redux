@@ -4,8 +4,8 @@
 // middleware, the Fast Store is the user-defined store that the middleware
 // intercepts.
 
-const _isEqual = require('lodash/isEqual')
-const redux = require('redux')
+const _isEqual = require("lodash/isEqual")
+const redux = require("redux")
 
 // Helper function/main export to make setting up remote redux easier
 const remoteRedux = ({
@@ -32,7 +32,7 @@ const remoteReduxMiddleware = (
 ) => store => {
   if (!detectRemoteAction) {
     detectRemoteAction = action =>
-      action.remote || action.type.startsWith('REMOTE_')
+      action.remote || action.type.startsWith("REMOTE_")
   }
   if (!options) options = { conservative: false }
 
@@ -77,7 +77,7 @@ const remoteReduxMiddleware = (
         makeRequest(store.getState(), action, response => {
           store.dispatch({
             _remoteReduxResponse: true,
-            type: 'RESPONSE_' + action.type,
+            type: "RESPONSE_" + action.type,
             response
           })
         })
@@ -109,7 +109,7 @@ const remoteReduxMiddleware = (
           reconciledState = trueStoreState
         }
         newActions.push({
-          type: '@@remote-redux/RECONCILE',
+          type: "@@remote-redux/RECONCILE",
           newState: reconciledState
         })
       }
@@ -138,7 +138,7 @@ const remoteReduxReducer = applyResponse => {
     if (action._remoteReduxResponse) {
       return applyResponse(state, action)
     }
-    if (action.type === '@@remote-redux/RECONCILE') {
+    if (action.type === "@@remote-redux/RECONCILE") {
       return action.newState
     }
     return state
@@ -155,13 +155,21 @@ const createStore = ({
   middlewares,
   makeRequest,
   detectRemoteAction,
-  applyResponse
+  applyResponse,
+  useReduxDevTools
 }) => {
   const wrappedReducer = wrapReducer(reducer, applyResponse)
 
-  const middleware = redux.applyMiddleware(
-    ...(middlewares || []),
-    remoteReduxMiddleware(makeRequest, detectRemoteAction, wrappedReducer)
+  let compose = redux.compose
+  if (useReduxDevTools) {
+    compose = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || redux.compose
+  }
+
+  const middleware = compose(
+    redux.applyMiddleware(
+      ...(middlewares || []),
+      remoteReduxMiddleware(makeRequest, detectRemoteAction, wrappedReducer)
+    )
   )
 
   return redux.createStore(wrappedReducer, initialState, middleware)
